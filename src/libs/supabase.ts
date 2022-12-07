@@ -13,18 +13,18 @@ type AnswerValue = 1 | 2 | 3 | 4
 
 export const postAnswer = async (
   questionId: string,
-  answerValue: AnswerValue,
-  adress: string
+  emailAddress: string,
+  answerValue: AnswerValue
 ) => {
   const insertValue = {
     question_id: questionId,
-    adress: adress,
-    answer: answerValue,
-    created_at: new Date()
+    email_address: emailAddress,
+    answer_value: answerValue,
   }
 
-  let { error } = await supabase.from("answers").insert(insertValue)
-  if (error) {
+  try {
+    await supabase.from("answers").insert(insertValue)
+  } catch (error) {
     throw error
   }
 }
