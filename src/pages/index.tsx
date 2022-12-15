@@ -1,3 +1,13 @@
+import {
+    Box,
+    Button,
+    Center,
+    Flex,
+    HStack,
+    Stack,
+    Text,
+    VStack,
+} from "@chakra-ui/react"
 import Head from "next/head"
 import Image from "next/image"
 import { useState, useEffect } from "react"
@@ -6,10 +16,22 @@ import {
     updateQuestionPosition,
     getQuestionPositionChannel,
 } from "../libs/supabase"
-import styles from "../styles/Home.module.css"
 
 const ANSWER_VALUES = [1, 2, 3, 4] as const
 type ANSWER_VALUES = typeof ANSWER_VALUES[number]
+
+const toStr = (v: ANSWER_VALUES) => {
+    switch (v) {
+        case 1:
+            return "A"
+        case 2:
+            return "B"
+        case 3:
+            return "C"
+        case 4:
+            return "D"
+    }
+}
 
 export default function Home() {
     const current_question_number = 1
@@ -62,35 +84,47 @@ export default function Home() {
     }
 
     return (
-        <div className={styles.container}>
+        <main>
             <Head>
                 <title>queen</title>
                 <link rel="icon" href="/favicon.ico" />
             </Head>
 
-            <main className={styles.main}>
-                <h1 className={styles.title}>{questionId}問目</h1>
+            <VStack h="100vh" justifyContent="center" spacing="12">
+                <Text fontWeight="bold" fontSize="4xl">
+                    {questionId}問目
+                </Text>
 
-                <div className={styles.grid}>
+                <Flex
+                    flexWrap="wrap"
+                    w="800px"
+                    justifyContent="center"
+                    gap="12px"
+                >
                     {ANSWER_VALUES.map((value) => (
-                        <button
+                        <Button
                             key={value}
                             type="button"
-                            className={`${styles.card} ${
-                                selectedValue === value ? styles.selected : ""
-                            }`}
+                            w="300px"
+                            h="60px"
+                            isLoading={false}
+                            border={
+                                selectedValue === value
+                                    ? "1px solid #666"
+                                    : undefined
+                            }
                             onClick={(e) => {
                                 e.preventDefault()
                                 onClickValue(value)
                             }}
                         >
-                            {value}
-                        </button>
+                            {toStr(value)}
+                        </Button>
                     ))}
-                </div>
+                </Flex>
 
                 <div>
-                    <button
+                    <Button
                         type="button"
                         onClick={(e) => {
                             e.preventDefault()
@@ -98,10 +132,10 @@ export default function Home() {
                         }}
                     >
                         送信
-                    </button>
+                    </Button>
                 </div>
                 <div>
-                    <button
+                    <Button
                         type="button"
                         onClick={(e) => {
                             e.preventDefault()
@@ -109,27 +143,9 @@ export default function Home() {
                         }}
                     >
                         次へ
-                    </button>
+                    </Button>
                 </div>
-            </main>
-
-            <footer className={styles.footer}>
-                <a
-                    href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    Powered by{" "}
-                    <span className={styles.logo}>
-                        <Image
-                            src="/vercel.svg"
-                            alt="Vercel Logo"
-                            width={72}
-                            height={16}
-                        />
-                    </span>
-                </a>
-            </footer>
-        </div>
+            </VStack>
+        </main>
     )
 }
