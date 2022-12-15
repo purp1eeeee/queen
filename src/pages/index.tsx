@@ -1,15 +1,5 @@
-import {
-    Box,
-    Button,
-    Center,
-    Flex,
-    HStack,
-    Stack,
-    Text,
-    VStack,
-} from "@chakra-ui/react"
+import { Button, Flex, Spinner, Stack, Text, VStack } from "@chakra-ui/react"
 import Head from "next/head"
-import Image from "next/image"
 import { useState, useEffect } from "react"
 import {
     postAnswer,
@@ -34,11 +24,11 @@ const toStr = (v: ANSWER_VALUES) => {
 }
 
 export default function Home() {
-    const current_question_number = 1
-
     const [selectedValue, setSelectedValue] = useState<
         ANSWER_VALUES | undefined
     >(undefined)
+
+    const [isAnswered, setIsAnswered] = useState(false)
 
     const [questionId, setCurrentQuestionId] = useState<number>(1)
 
@@ -56,6 +46,7 @@ export default function Home() {
                 (payload) => {
                     setCurrentQuestionId(payload.new.current_question_id)
                     console.log(payload)
+                    setIsAnswered(false)
                 }
             )
             .subscribe()
@@ -81,6 +72,7 @@ export default function Home() {
             emailAddress: "hoge@hoge",
             answerValue: selectedValue,
         })
+        setIsAnswered(true)
     }
 
     return (
@@ -90,62 +82,69 @@ export default function Home() {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
 
-            <VStack h="100vh" justifyContent="center" spacing="12">
-                <Text fontWeight="bold" fontSize="4xl">
-                    {questionId}問目
-                </Text>
+            {isAnswered ? (
+                <VStack h="100vh" justifyContent="center" spacing="4">
+                    <Text>次の質問までお待ちください...</Text>
+                    <Spinner size="xl" />
+                </VStack>
+            ) : (
+                <VStack h="100vh" justifyContent="center" spacing="12">
+                    <Text fontWeight="bold" fontSize="4xl">
+                        {questionId}問目
+                    </Text>
 
-                <Flex
-                    flexWrap="wrap"
-                    w="800px"
-                    justifyContent="center"
-                    gap="12px"
-                >
-                    {ANSWER_VALUES.map((value) => (
+                    <Flex
+                        flexWrap="wrap"
+                        w="800px"
+                        justifyContent="center"
+                        gap="12px"
+                    >
+                        {ANSWER_VALUES.map((value) => (
+                            <Button
+                                key={value}
+                                type="button"
+                                w="300px"
+                                h="60px"
+                                isLoading={false}
+                                border={
+                                    selectedValue === value
+                                        ? "1px solid #666"
+                                        : undefined
+                                }
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    onClickValue(value)
+                                }}
+                            >
+                                {toStr(value)}
+                            </Button>
+                        ))}
+                    </Flex>
+
+                    <div>
                         <Button
-                            key={value}
                             type="button"
-                            w="300px"
-                            h="60px"
-                            isLoading={false}
-                            border={
-                                selectedValue === value
-                                    ? "1px solid #666"
-                                    : undefined
-                            }
                             onClick={(e) => {
                                 e.preventDefault()
-                                onClickValue(value)
+                                onClickSubmit()
                             }}
                         >
-                            {toStr(value)}
+                            送信
                         </Button>
-                    ))}
-                </Flex>
-
-                <div>
-                    <Button
-                        type="button"
-                        onClick={(e) => {
-                            e.preventDefault()
-                            onClickSubmit()
-                        }}
-                    >
-                        送信
-                    </Button>
-                </div>
-                <div>
-                    <Button
-                        type="button"
-                        onClick={(e) => {
-                            e.preventDefault()
-                            onClickPosition()
-                        }}
-                    >
-                        次へ
-                    </Button>
-                </div>
-            </VStack>
+                    </div>
+                    <div>
+                        <Button
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault()
+                                onClickPosition()
+                            }}
+                        >
+                            次へ
+                        </Button>
+                    </div>
+                </VStack>
+            )}
         </main>
     )
 }
