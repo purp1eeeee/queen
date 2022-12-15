@@ -1,12 +1,11 @@
-import { Button, Flex, Spinner, Stack, Text, VStack } from "@chakra-ui/react"
+import { Button, Flex, Spinner, Text, VStack } from "@chakra-ui/react"
 import { User } from "@supabase/supabase-js"
 import Head from "next/head"
-import { useState, useEffect, use } from "react"
+import { useState, useEffect } from "react"
 import {
     postAnswer,
     updateQuestionPosition,
     getQuestionPositionChannel,
-    supabase,
     getMe,
 } from "../libs/supabase"
 
