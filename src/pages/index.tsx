@@ -7,6 +7,7 @@ import {
     updateQuestionPosition,
     getQuestionPositionChannel,
     getMe,
+    supabase,
 } from "../libs/supabase"
 
 const ANSWER_VALUES = [1, 2, 3, 4] as const
@@ -35,6 +36,17 @@ export default function Home() {
     const [questionId, setCurrentQuestionId] = useState<number>(1)
 
     const [me, setMe] = useState<User | null>(null)
+
+    useEffect(() => {
+        supabase
+            .from("current_question_positions")
+            .select("current_question_id")
+            .limit(1)
+            .then((res) => {
+                if (!res.data) return
+                setCurrentQuestionId(res.data[0]?.current_question_id ?? 0)
+            })
+    }, [])
 
     useEffect(() => {
         ;(async () => {
@@ -104,7 +116,11 @@ export default function Home() {
 
             {isAnswered ? (
                 <VStack h="100vh" justifyContent="center" spacing="4">
-                    <Text>次の質問までお待ちください...</Text>
+                    {questionId === 8 && isAnswered ? (
+                        <Text>集計中です...</Text>
+                    ) : (
+                        <Text>次の質問までお待ちください...</Text>
+                    )}
                     <Spinner size="xl" />
                 </VStack>
             ) : (
