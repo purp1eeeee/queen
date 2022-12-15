@@ -1,7 +1,11 @@
 import Head from "next/head"
 import Image from "next/image"
-import { useState } from "react"
-import { postAnswer } from "../libs/supabase"
+import { useState, useEffect } from "react"
+import {
+    postAnswer,
+    updateQuestionPosition,
+    getQuestionPositionChannel,
+} from "../libs/supabase"
 import styles from "../styles/Home.module.css"
 
 const ANSWER_VALUES = [1, 2, 3, 4] as const
@@ -14,6 +18,34 @@ export default function Home() {
         ANSWER_VALUES | undefined
     >(undefined)
 
+    const [questionId, setCurrentQuestionId] = useState<number>(1)
+
+    useEffect(() => {
+        const positionListener = getQuestionPositionChannel()
+
+        positionListener
+            .on(
+                "postgres_changes",
+                {
+                    event: "UPDATE",
+                    schema: "public",
+                    table: "current_question_positions",
+                },
+                (payload) => {
+                    setCurrentQuestionId(payload.new.current_question_id)
+                    console.log(payload)
+                }
+            )
+            .subscribe()
+        return () => {
+            positionListener.unsubscribe()
+        }
+    }, [])
+
+    const onClickPosition = () => {
+        updateQuestionPosition(questionId + 1)
+    }
+
     const onClickValue = (value: ANSWER_VALUES) => {
         setSelectedValue(value)
     }
@@ -23,7 +55,7 @@ export default function Home() {
             return
         }
         postAnswer({
-            questionId: 1,
+            questionId: questionId,
             emailAddress: "hoge@hoge",
             answerValue: selectedValue,
         })
@@ -37,7 +69,7 @@ export default function Home() {
             </Head>
 
             <main className={styles.main}>
-                <h1 className={styles.title}>{current_question_number}問目</h1>
+                <h1 className={styles.title}>{questionId}問目</h1>
 
                 <div className={styles.grid}>
                     {ANSWER_VALUES.map((value) => (
@@ -66,6 +98,17 @@ export default function Home() {
                         }}
                     >
                         送信
+                    </button>
+                </div>
+                <div>
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.preventDefault()
+                            onClickPosition()
+                        }}
+                    >
+                        次へ
                     </button>
                 </div>
             </main>

@@ -23,3 +23,24 @@ export const postAnswer = async (req: AnswerRequest) => {
         answer_value: req.answerValue,
     })
 }
+
+export const getQuestionPosition = async () => {
+    const { data, error } = await supabase
+        .from("current_question_positions")
+        .select("current_question_id")
+        .eq("id", 1)
+    console.log("data: ", data)
+    return { data, error }
+}
+
+export const updateQuestionPosition = async (newQuestionId: number) => {
+    await supabase.from("current_question_positions").upsert({
+        id: 1,
+        current_question_id: newQuestionId,
+    })
+}
+
+export const getQuestionPositionChannel = () => {
+    const positionChannel = supabase.channel("current_question_positions")
+    return positionChannel
+}
