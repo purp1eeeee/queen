@@ -1,10 +1,13 @@
 import { Button, Flex, Spinner, Stack, Text, VStack } from "@chakra-ui/react"
+import { User } from "@supabase/supabase-js"
 import Head from "next/head"
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import {
     postAnswer,
     updateQuestionPosition,
     getQuestionPositionChannel,
+    supabase,
+    getMe,
 } from "../libs/supabase"
 
 const ANSWER_VALUES = [1, 2, 3, 4] as const
@@ -31,6 +34,18 @@ export default function Home() {
     const [isAnswered, setIsAnswered] = useState(false)
 
     const [questionId, setCurrentQuestionId] = useState<number>(1)
+
+    const [me, setMe] = useState<User | null>(null)
+
+    useEffect(() => {
+        ;(async () => {
+            const {
+                data: { user },
+            } = await getMe()
+            if (!user) return
+            setMe(user)
+        })()
+    }, [])
 
     useEffect(() => {
         const positionListener = getQuestionPositionChannel()
@@ -67,9 +82,15 @@ export default function Home() {
         if (!selectedValue) {
             return
         }
+        if (!me) {
+            return
+        }
+        if (!me.email) {
+            return
+        }
         postAnswer({
             questionId: questionId,
-            emailAddress: "hoge@hoge",
+            emailAddress: me.email,
             answerValue: selectedValue,
         })
         setIsAnswered(true)

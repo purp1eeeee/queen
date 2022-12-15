@@ -44,3 +44,7 @@ export const getQuestionPositionChannel = () => {
     const positionChannel = supabase.channel("current_question_positions")
     return positionChannel
 }
+
+export const getMe = async () => {
+    return await supabase.auth.getUser()
+}
