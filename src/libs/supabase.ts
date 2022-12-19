@@ -46,6 +46,35 @@ export const getAllAnswerRanking = async () => {
     return result
 }
 
+export const getResultByEmail = async (email: string) => {
+    const { data: _answers } = await supabase
+        .from("answers")
+        .select("email_address, question_id, answer_value")
+        .eq("email_address", email)
+    const answers = _answers as Answer[]
+
+    const { data: questions } = await supabase
+        .from("questions")
+        .select("id, correct")
+
+    const currect = answers.reduce((p, c) => {
+        const q = questions?.find((v) => v.id === c.question_id)
+        if (!q) {
+            return p
+        }
+
+        if (q.correct === c.answer_value) {
+            return p + 1
+        }
+        return p
+    }, 0)
+
+    return {
+        total: answers.length,
+        currect,
+    }
+}
+
 type AnswerValue = 1 | 2 | 3 | 4
 
 type AnswerRequest = {

@@ -3,6 +3,7 @@ import {
     Button,
     ButtonGroup,
     Center,
+    Input,
     Spinner,
     Text,
     VStack,
@@ -13,6 +14,7 @@ import { useAuth } from "../hooks/useAuth"
 import {
     getAllAnswerRanking,
     getCurrentQuestionId,
+    getResultByEmail,
     updateQuestionPosition,
 } from "../libs/supabase"
 
@@ -25,6 +27,8 @@ const Page = () => {
     )
 
     const [result, setResult] = useState<Record<string, number>>({})
+
+    const [email, setEmail] = useState("")
 
     useEffect(() => {
         ;(async () => {
@@ -97,6 +101,24 @@ const Page = () => {
                     <Button onClick={onClickResult}>get</Button>
                 </Box>
                 <Box>{JSON.stringify(result)}</Box>
+
+                <Box>
+                    <Text>get result by email</Text>
+                    <Input
+                        value={email}
+                        onChange={(e) => {
+                            setEmail(e.target.value)
+                        }}
+                    />
+                    <Button
+                        onClick={async () => {
+                            const a = await getResultByEmail(email)
+                            console.log(a)
+                        }}
+                    >
+                        get
+                    </Button>
+                </Box>
             </VStack>
         </main>
     )

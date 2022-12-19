@@ -7,6 +7,7 @@ import {
     getQuestionPositionChannel,
     getCurrentQuestionId,
     checkIsAnsweredByEmailAndQuestionId,
+    getResultByEmail,
 } from "../libs/supabase"
 
 const ANSWER_VALUES = [1, 2, 3, 4] as const
@@ -36,6 +37,8 @@ export default function Home() {
         undefined
     )
 
+    const [result, setResult] = useState({ total: 0, currect: 0 })
+
     const { me } = useAuth()
 
     useEffect(() => {
@@ -58,6 +61,17 @@ export default function Home() {
             }
         })()
     }, [me?.email, questionId])
+
+    useEffect(() => {
+        ;(async () => {
+            if (!me?.email) return
+            // TODO game status
+            if (false) {
+                const r = await getResultByEmail(me.email)
+                setResult(r)
+            }
+        })()
+    }, [me?.email])
 
     useEffect(() => {
         const positionListener = getQuestionPositionChannel()
@@ -105,14 +119,22 @@ export default function Home() {
         setIsAnswered(true)
     }
 
+    // TODO: game status
+    if (false) {
+        return (
+            <main>
+                <VStack h="100vh" justifyContent="center" spacing="4">
+                    <Text>回答結果は...</Text>
+
+                    <Text>{`${result.total}問中 ${result.currect}問正解でした！`}</Text>
+                </VStack>
+            </main>
+        )
+    }
+
     return (
         <main>
-            <Head>
-                <title>queen</title>
-                <link rel="icon" href="/favicon.ico" />
-            </Head>
-
-            {false ? (
+            {isAnswered ? (
                 <VStack h="100vh" justifyContent="center" spacing="4">
                     {questionId === 8 && isAnswered ? (
                         <Text>集計中です...</Text>
