@@ -14,13 +14,31 @@ import { useAuth } from "../hooks/useAuth"
 import {
     getAllAnswerRanking,
     getCurrentQuestionId,
+    getGameStatus,
     getResultByEmail,
+    postGameStatus,
     updateQuestionPosition,
 } from "../libs/supabase"
+
+const STATUS = [0, 1, 2] as const
+type STATUS = typeof STATUS[number]
+
+const toStr = (s: STATUS): string => {
+    switch (s) {
+        case 0:
+            return "準備中"
+        case 1:
+            return "進行中"
+        case 2:
+            return "終了"
+    }
+}
 
 const Page = () => {
     const router = useRouter()
     const { me } = useAuth()
+
+    const [status, setStatus] = useState<STATUS>(0)
 
     const [questionId, setCurrentQuestionId] = useState<number | undefined>(
         undefined
@@ -29,6 +47,13 @@ const Page = () => {
     const [result, setResult] = useState<Record<string, number>>({})
 
     const [email, setEmail] = useState("")
+
+    useEffect(() => {
+        ;(async () => {
+            const r = await getGameStatus()
+            setStatus(r.status as STATUS)
+        })()
+    }, [])
 
     useEffect(() => {
         ;(async () => {
@@ -62,6 +87,11 @@ const Page = () => {
         setResult(r)
     }
 
+    const onClickStatus = async (s: STATUS) => {
+        await postGameStatus(s)
+        setStatus(s)
+    }
+
     if (!questionId) {
         return (
             <Center h="100vh">
@@ -74,11 +104,18 @@ const Page = () => {
         <main>
             <VStack h="100vh" justifyContent="center" spacing="24">
                 <Box>
-                    <Text>Game Status</Text>
-                    <Text>hogehoge</Text>
+                    <Text fontWeight="bold">Game Status</Text>
+                    <Text>{toStr(status)}</Text>
+                    <ButtonGroup>
+                        <Button onClick={() => onClickStatus(0)}>ready</Button>
+                        <Button onClick={() => onClickStatus(1)}>
+                            progress
+                        </Button>
+                        <Button onClick={() => onClickStatus(2)}>finish</Button>
+                    </ButtonGroup>
                 </Box>
                 <Box>
-                    <Text>Question Status</Text>
+                    <Text fontWeight="bold">Question Status</Text>
                     <Text>current: {questionId}</Text>
                     <ButtonGroup>
                         <Button
@@ -97,13 +134,13 @@ const Page = () => {
                     </ButtonGroup>
                 </Box>
                 <Box>
-                    <Text>get answer result!</Text>
+                    <Text fontWeight="bold">get answer result!</Text>
                     <Button onClick={onClickResult}>get</Button>
                 </Box>
                 <Box>{JSON.stringify(result)}</Box>
 
                 <Box>
-                    <Text>get result by email</Text>
+                    <Text fontWeight="bold">get result by email</Text>
                     <Input
                         value={email}
                         onChange={(e) => {

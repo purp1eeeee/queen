@@ -8,6 +8,8 @@ import {
     getCurrentQuestionId,
     checkIsAnsweredByEmailAndQuestionId,
     getResultByEmail,
+    getGameStatusChannel,
+    getGameStatus,
 } from "../libs/supabase"
 
 const ANSWER_VALUES = [1, 2, 3, 4] as const
@@ -37,6 +39,8 @@ export default function Home() {
         undefined
     )
 
+    const [status, setStatus] = useState<0 | 1 | 2>(0)
+
     const [result, setResult] = useState({ total: 0, currect: 0 })
 
     const { me } = useAuth()
@@ -45,6 +49,13 @@ export default function Home() {
         ;(async () => {
             const currentQuestionId = await getCurrentQuestionId()
             setCurrentQuestionId(currentQuestionId)
+        })()
+    }, [])
+
+    useEffect(() => {
+        ;(async () => {
+            const s = await getGameStatus()
+            setStatus(s.status)
         })()
     }, [])
 
@@ -65,13 +76,12 @@ export default function Home() {
     useEffect(() => {
         ;(async () => {
             if (!me?.email) return
-            // TODO game status
-            if (false) {
+            if (status === 2) {
                 const r = await getResultByEmail(me.email)
                 setResult(r)
             }
         })()
-    }, [me?.email])
+    }, [me?.email, status])
 
     useEffect(() => {
         const positionListener = getQuestionPositionChannel()
@@ -93,6 +103,28 @@ export default function Home() {
             .subscribe()
         return () => {
             positionListener.unsubscribe()
+        }
+    }, [])
+
+    useEffect(() => {
+        const listener = getGameStatusChannel()
+
+        listener
+            .on(
+                "postgres_changes",
+                {
+                    event: "UPDATE",
+                    schema: "public",
+                    table: "game_status",
+                },
+                (payload) => {
+                    setStatus(payload.new.status)
+                    console.log(payload)
+                }
+            )
+            .subscribe()
+        return () => {
+            listener.unsubscribe()
         }
     }, [])
 
@@ -119,8 +151,16 @@ export default function Home() {
         setIsAnswered(true)
     }
 
-    // TODO: game status
-    if (false) {
+    if (status === 0) {
+        return (
+            <VStack h="100vh" justifyContent="center" spacing="4">
+                <Text>開始をお待ちください...</Text>
+                <Spinner size="xl" />
+            </VStack>
+        )
+    }
+
+    if (status === 2) {
         return (
             <main>
                 <VStack h="100vh" justifyContent="center" spacing="4">

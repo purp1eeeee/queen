@@ -121,7 +121,7 @@ export const getCurrentQuestionId = async (): Promise<number> => {
 }
 
 export const updateQuestionPosition = async (newQuestionId: number) => {
-    await supabase.from("current_question_positions").upsert({
+    await supabase.from("current_question_positions").update({
         id: 1,
         current_question_id: newQuestionId,
     })
@@ -130,6 +130,10 @@ export const updateQuestionPosition = async (newQuestionId: number) => {
 export const getQuestionPositionChannel = () => {
     const positionChannel = supabase.channel("current_question_positions")
     return positionChannel
+}
+
+export const getGameStatusChannel = () => {
+    return supabase.channel("game_status")
 }
 
 export const checkIsAnsweredByEmailAndQuestionId = async (
@@ -150,4 +154,19 @@ export const checkIsAnsweredByEmailAndQuestionId = async (
 
 export const getSession = async () => {
     return await supabase.auth.getSession()
+}
+
+export const getGameStatus = async () => {
+    const { data } = await supabase.from("game_status").select("*").limit(1)
+    if (!data) {
+        throw new Error("")
+    }
+    return data[0]
+}
+
+export const postGameStatus = async (status: 0 | 1 | 2) => {
+    await supabase.from("game_status").update({
+        id: 1,
+        status,
+    })
 }
