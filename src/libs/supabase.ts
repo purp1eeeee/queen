@@ -43,7 +43,7 @@ export const getAllAnswerRanking = async () => {
 
     const want = Object.fromEntries(_want)
     console.log(want)
-    return result
+    return want
 }
 
 export const getResultByEmail = async (email: string) => {
