@@ -31,7 +31,7 @@ export const AuthProvider = (props: Props) => {
     if (isLoading) {
         return (
             <Center h="100vh">
-                <Spinner size="xl" />
+                <Spinner size="xl" speed="0.65s" />
             </Center>
         )
     }

@@ -155,7 +155,7 @@ export default function Home() {
         return (
             <VStack h="100vh" justifyContent="center" spacing="4">
                 <Text>開始をお待ちください...</Text>
-                <Spinner size="xl" />
+                <Spinner size="xl" speed="0.65s" />
             </VStack>
         )
     }
@@ -181,7 +181,7 @@ export default function Home() {
                     ) : (
                         <Text>次の質問までお待ちください...</Text>
                     )}
-                    <Spinner size="xl" />
+                    <Spinner size="xl" speed="0.65s" />
                 </VStack>
             ) : (
                 <VStack h="100vh" justifyContent="center" spacing="12">

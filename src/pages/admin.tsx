@@ -95,7 +95,7 @@ const Page = () => {
     if (!questionId) {
         return (
             <Center h="100vh">
-                <Spinner size="xl" />
+                <Spinner size="xl" speed="0.65s" />
             </Center>
         )
     }
