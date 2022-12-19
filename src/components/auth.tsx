@@ -19,7 +19,7 @@ const Container = (props: any) => {
     return props.children
 }
 
-export default function AuthBasic() {
+export const AuthBasic = () => {
     return (
         <div style={{ maxWidth: 400, margin: "0 auto", marginTop: 250 }}>
             <Container supabaseClient={supabase}>

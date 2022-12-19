@@ -1,13 +1,12 @@
 import { Button, Flex, Spinner, Text, VStack } from "@chakra-ui/react"
-import { User } from "@supabase/supabase-js"
 import Head from "next/head"
 import { useState, useEffect } from "react"
+import { useAuth } from "../hooks/useAuth"
 import {
     postAnswer,
-    updateQuestionPosition,
     getQuestionPositionChannel,
-    getMe,
-    supabase,
+    getCurrentQuestionId,
+    checkIsAnsweredByEmailAndQuestionId,
 } from "../libs/supabase"
 
 const ANSWER_VALUES = [1, 2, 3, 4] as const
@@ -33,30 +32,32 @@ export default function Home() {
 
     const [isAnswered, setIsAnswered] = useState(false)
 
-    const [questionId, setCurrentQuestionId] = useState<number>(1)
+    const [questionId, setCurrentQuestionId] = useState<number | undefined>(
+        undefined
+    )
 
-    const [me, setMe] = useState<User | null>(null)
+    const { me } = useAuth()
 
     useEffect(() => {
-        supabase
-            .from("current_question_positions")
-            .select("current_question_id")
-            .limit(1)
-            .then((res) => {
-                if (!res.data) return
-                setCurrentQuestionId(res.data[0]?.current_question_id ?? 0)
-            })
+        ;(async () => {
+            const currentQuestionId = await getCurrentQuestionId()
+            setCurrentQuestionId(currentQuestionId)
+        })()
     }, [])
 
     useEffect(() => {
         ;(async () => {
-            const {
-                data: { user },
-            } = await getMe()
-            if (!user) return
-            setMe(user)
+            if (!me?.email) return
+            if (!questionId) return
+            const answered = await checkIsAnsweredByEmailAndQuestionId(
+                me.email,
+                questionId
+            )
+            if (answered) {
+                setIsAnswered(true)
+            }
         })()
-    }, [])
+    }, [me?.email, questionId])
 
     useEffect(() => {
         const positionListener = getQuestionPositionChannel()
@@ -81,10 +82,6 @@ export default function Home() {
         }
     }, [])
 
-    const onClickPosition = () => {
-        updateQuestionPosition(questionId + 1)
-    }
-
     const onClickValue = (value: ANSWER_VALUES) => {
         setSelectedValue(value)
     }
@@ -93,17 +90,18 @@ export default function Home() {
         if (!selectedValue) {
             return
         }
-        if (!me) {
+        if (!me?.email) {
             return
         }
-        if (!me.email) {
+        if (!questionId) {
             return
         }
-        postAnswer({
+        await postAnswer({
             questionId: questionId,
             emailAddress: me.email,
             answerValue: selectedValue,
         })
+
         setIsAnswered(true)
     }
 
@@ -114,7 +112,7 @@ export default function Home() {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
 
-            {isAnswered ? (
+            {false ? (
                 <VStack h="100vh" justifyContent="center" spacing="4">
                     {questionId === 8 && isAnswered ? (
                         <Text>集計中です...</Text>
@@ -166,17 +164,6 @@ export default function Home() {
                             }}
                         >
                             送信
-                        </Button>
-                    </div>
-                    <div>
-                        <Button
-                            type="button"
-                            onClick={(e) => {
-                                e.preventDefault()
-                                onClickPosition()
-                            }}
-                        >
-                            次へ
                         </Button>
                     </div>
                 </VStack>
